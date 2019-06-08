@@ -1434,17 +1434,17 @@ func (l *State) PushNil() { l.apiPush(nil) }
 // PushNumber pushes a number onto the stack.
 //
 // http://www.lua.org/manual/5.2/manual.html#lua_pushnumber
-func (l *State) PushNumber(n float64) { l.apiPush(n) }
+func (l *State) PushNumber(n float64) { l.apiPush(cachedValue(n)) }
 
 // PushInteger pushes n onto the stack.
 //
 // http://www.lua.org/manual/5.2/manual.html#lua_pushinteger
-func (l *State) PushInteger(n int) { l.apiPush(float64(n)) }
+func (l *State) PushInteger(n int) { l.apiPush(cachedValue(float64(n))) }
 
 // PushUnsigned pushes n onto the stack.
 //
 // http://www.lua.org/manual/5.2/manual.html#lua_pushunsigned
-func (l *State) PushUnsigned(n uint) { l.apiPush(float64(n)) }
+func (l *State) PushUnsigned(n uint) { l.apiPush(cachedValue(float64(n))) }
 
 // PushBoolean pushes a boolean value with value b onto the stack.
 //

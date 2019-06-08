@@ -9,7 +9,7 @@ import (
 func (l *State) arith(rb, rc value, op tm) value {
 	if b, ok := l.toNumber(rb); ok {
 		if c, ok := l.toNumber(rc); ok {
-			return arith(Operator(op-tmAdd)+OpAdd, b, c)
+			return cachedValue(arith(Operator(op-tmAdd)+OpAdd, b, c))
 		}
 	}
 	if result, ok := l.callBinaryTagMethod(rb, rc, op); ok {
@@ -73,10 +73,10 @@ func (l *State) objectLength(v value) value {
 	switch v := v.(type) {
 	case *table:
 		if tm = l.fastTagMethod(v.metaTable, tmLen); tm == nil {
-			return float64(v.length())
+			return cachedValue(float64(v.length()))
 		}
 	case string:
-		return float64(len(v))
+		return cachedValue(float64(len(v)))
 	default:
 		if tm = l.tagMethodByObject(v, tmLen); tm == nil {
 			l.typeError(v, "get length of")
@@ -432,7 +432,7 @@ func init() {
 			c := e.k(i.c())
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					e.frame[i.a()] = nb + nc
+					e.frame[i.a()] = cachedValue(nb + nc)
 					if e.hooked() {
 						e.hook()
 					}
@@ -454,7 +454,7 @@ func init() {
 			c := e.k(i.c())
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					e.frame[i.a()] = nb - nc
+					e.frame[i.a()] = cachedValue(nb - nc)
 					if e.hooked() {
 						e.hook()
 					}
@@ -476,7 +476,7 @@ func init() {
 			c := e.k(i.c())
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					e.frame[i.a()] = nb * nc
+					e.frame[i.a()] = cachedValue(nb * nc)
 					if e.hooked() {
 						e.hook()
 					}
@@ -498,7 +498,7 @@ func init() {
 			c := e.k(i.c())
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					e.frame[i.a()] = nb / nc
+					e.frame[i.a()] = cachedValue(nb / nc)
 					if e.hooked() {
 						e.hook()
 					}
@@ -520,7 +520,7 @@ func init() {
 			c := e.k(i.c())
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					e.frame[i.a()] = math.Mod(nb, nc)
+					e.frame[i.a()] = cachedValue(math.Mod(nb, nc))
 					if e.hooked() {
 						e.hook()
 					}
@@ -542,7 +542,7 @@ func init() {
 			c := e.k(i.c())
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					e.frame[i.a()] = math.Pow(nb, nc)
+					e.frame[i.a()] = cachedValue(math.Pow(nb, nc))
 					if e.hooked() {
 						e.hook()
 					}
@@ -562,7 +562,7 @@ func init() {
 		func(e *engine, i instruction) (engineOp, instruction) { // opUnaryMinus
 			switch b := e.frame[i.b()].(type) {
 			case float64:
-				e.frame[i.a()] = -b
+				e.frame[i.a()] = cachedValue(-b)
 			default:
 				tmp := e.l.arith(b, b, tmUnaryMinus)
 				e.frame = e.callInfo.frame
@@ -801,8 +801,8 @@ func init() {
 			index, limit, step := e.frame[a+0].(float64), e.frame[a+1].(float64), e.frame[a+2].(float64)
 			if index += step; (0 < step && index <= limit) || (step <= 0 && limit <= index) {
 				e.callInfo.jump(i.sbx())
-				e.frame[a+0] = index // update internal index...
-				e.frame[a+3] = index // ... and external index
+				e.frame[a+0] = cachedValue(index) // update internal index...
+				e.frame[a+3] = cachedValue(index) // ... and external index
 			}
 			if e.hooked() {
 				e.hook()
@@ -819,7 +819,7 @@ func init() {
 			} else if step, ok := e.l.toNumber(e.frame[a+2]); !ok {
 				e.l.runtimeError("'for' step must be a number")
 			} else {
-				e.frame[a+0], e.frame[a+1], e.frame[a+2] = init-step, limit, step
+				e.frame[a+0], e.frame[a+1], e.frame[a+2] = cachedValue(init-step), cachedValue(limit), cachedValue(step)
 				e.callInfo.jump(i.sbx())
 			}
 			if e.hooked() {
@@ -927,7 +927,7 @@ func init() {
 	}
 }
 
-func (l *State) execute() { l.executeFunctionTable() }
+func (l *State) execute() { l.executeSwitch() }
 
 func (l *State) executeFunctionTable() {
 	ci := l.callInfo
@@ -1029,7 +1029,7 @@ func (l *State) executeSwitch() {
 			c := k(i.c(), constants, frame)
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					frame[i.a()] = nb + nc
+					frame[i.a()] = cachedValue(nb + nc)
 					break
 				}
 			}
@@ -1041,7 +1041,7 @@ func (l *State) executeSwitch() {
 			c := k(i.c(), constants, frame)
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					frame[i.a()] = nb - nc
+					frame[i.a()] = cachedValue(nb - nc)
 					break
 				}
 			}
@@ -1053,7 +1053,7 @@ func (l *State) executeSwitch() {
 			c := k(i.c(), constants, frame)
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					frame[i.a()] = nb * nc
+					frame[i.a()] = cachedValue(nb * nc)
 					break
 				}
 			}
@@ -1065,7 +1065,7 @@ func (l *State) executeSwitch() {
 			c := k(i.c(), constants, frame)
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					frame[i.a()] = nb / nc
+					frame[i.a()] = cachedValue(nb / nc)
 					break
 				}
 			}
@@ -1077,7 +1077,7 @@ func (l *State) executeSwitch() {
 			c := k(i.c(), constants, frame)
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					frame[i.a()] = math.Mod(nb, nc)
+					frame[i.a()] = cachedValue(math.Mod(nb, nc))
 					break
 				}
 			}
@@ -1089,7 +1089,7 @@ func (l *State) executeSwitch() {
 			c := k(i.c(), constants, frame)
 			if nb, ok := b.(float64); ok {
 				if nc, ok := c.(float64); ok {
-					frame[i.a()] = math.Pow(nb, nc)
+					frame[i.a()] = cachedValue(math.Pow(nb, nc))
 					break
 				}
 			}
@@ -1099,7 +1099,7 @@ func (l *State) executeSwitch() {
 		case opUnaryMinus:
 			switch b := frame[i.b()].(type) {
 			case float64:
-				frame[i.a()] = -b
+				frame[i.a()] = cachedValue(-b)
 			default:
 				tmp := l.arith(b, b, tmUnaryMinus)
 				frame = ci.frame
@@ -1257,8 +1257,8 @@ func (l *State) executeSwitch() {
 			index, limit, step := frame[a+0].(float64), frame[a+1].(float64), frame[a+2].(float64)
 			if index += step; (0 < step && index <= limit) || (step <= 0 && limit <= index) {
 				ci.jump(i.sbx())
-				frame[a+0] = index // update internal index...
-				frame[a+3] = index // ... and external index
+				frame[a+0] = cachedValue(index) // update internal index...
+				frame[a+3] = cachedValue(index) // ... and external index
 			}
 		case opForPrep:
 			a := i.a()
@@ -1269,7 +1269,7 @@ func (l *State) executeSwitch() {
 			} else if step, ok := l.toNumber(frame[a+2]); !ok {
 				l.runtimeError("'for' step must be a number")
 			} else {
-				frame[a+0], frame[a+1], frame[a+2] = init-step, limit, step
+				frame[a+0], frame[a+1], frame[a+2] = cachedValue(init-step), cachedValue(limit), cachedValue(step)
 				ci.jump(i.sbx())
 			}
 		case opTForCall:
@@ -1335,4 +1335,23 @@ func (l *State) executeSwitch() {
 			panic(fmt.Sprintf("unexpected opExtraArg instruction, '%s'", i.String()))
 		}
 	}
+}
+
+// cache for float64 -> iface conversion
+var floatValueCache = [2*floatCacheRange + 1]value{}
+
+func init() {
+	for idx := -floatCacheRange; idx <= floatCacheRange; idx++ {
+		floatValueCache[idx+floatCacheRange] = value(float64(idx))
+	}
+}
+
+func cachedValue(f float64) value {
+	if f >= -floatCacheRange && f <= floatCacheRange {
+		if r := int(f); float64(r) == f {
+			return floatValueCache[r+floatCacheRange]
+		}
+	}
+
+	return f
 }

@@ -15,6 +15,7 @@ const (
 	apiCheck          = false
 	internalCheck     = false
 	pathListSeparator = ';'
+	floatCacheRange   = 1024 * 32
 )
 
 var defaultPath = "./?.lua" // TODO "${LUA_LDIR}?.lua;${LUA_LDIR}?/init.lua;./?.lua"

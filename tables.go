@@ -92,9 +92,9 @@ func (t *table) putAtInt(k int, v value) {
 	} else if k > 0 && v != nil && t.maybeResizeArray(k) {
 		t.array[k-1] = v
 	} else if v == nil {
-		delete(t.hash, float64(k))
+		delete(t.hash, cachedValue(float64(k)))
 	} else {
-		t.addOrInsertHash(float64(k), v)
+		t.addOrInsertHash(cachedValue(float64(k)), v)
 	}
 }
 
