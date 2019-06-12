@@ -289,7 +289,8 @@ func (l *State) toNumber(r value) (v float64, ok bool) {
 }
 
 func (l *State) toString(index int) (s string, ok bool) {
-	if s, ok = toString(l.stack[index]); ok {
+	var converted bool
+	if s, converted, ok = toString(l.stack[index]); ok && converted {
 		l.stack[index] = s
 	}
 	return
@@ -299,14 +300,14 @@ func numberToString(f float64) string {
 	return fmt.Sprintf("%.14g", f)
 }
 
-func toString(r value) (string, bool) {
+func toString(r value) (result string, converted bool, ok bool) {
 	switch r := r.(type) {
 	case string:
-		return r, true
+		return r, false, true
 	case float64:
-		return numberToString(r), true
+		return numberToString(r), true, true
 	}
-	return "", false
+	return "", false, false
 }
 
 func pairAsNumbers(p1, p2 value) (f1, f2 float64, ok bool) {

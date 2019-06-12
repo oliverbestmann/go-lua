@@ -798,7 +798,9 @@ func (l *State) ToUnsigned(index int) (uint, bool) {
 //
 // http://www.lua.org/manual/5.2/manual.html#lua_tolstring
 func (l *State) ToString(index int) (s string, ok bool) {
-	if s, ok = toString(l.indexToValue(index)); ok { // Bug compatibility: replace a number with its string representation.
+	var converted bool
+	if s, converted, ok = toString(l.indexToValue(index)); ok && converted {
+		// Bug compatibility: replace a number with its string representation.
 		l.setIndexToValue(index, s)
 	}
 	return
